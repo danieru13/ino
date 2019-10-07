@@ -17,11 +17,10 @@ const int B = 3975;
 
 #define BUILTIN_LED 2
 
-// Wifi network credentials
-const char* ssid = "Nett1";
-const char* password = "zvwq1218";
-// MQTT server ip address
-const char* mqtt_server = "192.168.43.225";
+// Update these with values suitable for your network.
+const char* ssid = "WIFI-LIS";                   
+//const char* password = "SSID_PASSWORD";          
+const char* mqtt_server = "192.168.193.101";  
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -46,7 +45,7 @@ void setup_wifi() {
   Serial.print("Connecting to ");
   Serial.println(ssid);
 
-  WiFi.begin(ssid, password);
+  WiFi.begin(ssid);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -88,7 +87,7 @@ void reconnect() {
     if (client.connect("ESP8266Client1")) {
       Serial.println("connected");
       // Subscribe to "casa/light" topic
-      client.subscribe("casa/light");
+      client.subscribe("hospital/room/lamp");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -119,6 +118,6 @@ void loop() {
     snprintf (msg, 75, "%.2f", temperature);
     Serial.print("Publish message: ");
     Serial.println(msg);
-    client.publish("casa/tmp", msg);
+    client.publish("hotel/room/tmp", msg);
   }
 }
