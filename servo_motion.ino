@@ -12,7 +12,7 @@ int pos = 0;    // variable to store the servo position
 // Update these with values suitable for your network.
 const char* ssid = "WIFI-LIS";                   
 //const char* password = "SSID_PASSWORD";          
-const char* mqtt_server = "192.168.193.101";            
+const char* mqtt_server = "192.168.192.7";            
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -61,7 +61,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.print(command);  
   Serial.println(); 
-  if (command == "ON") {
+  if (command == "ON" || command == "OPEN") {
     for (pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
     // in steps of 1 degree
     myservo.write(pos);              // tell servo to go to position in variable 'pos'
@@ -84,7 +84,8 @@ void reconnect() {
     if (client.connect("ESP8266Client")) {
       Serial.println("connected");
       // ... and resubscribe
-      client.subscribe("hospital/room/motor");
+      client.subscribe("hospital/room/window");
+      client.subscribe("hospital/room/fan");
     } 
     else {
       Serial.print("failed connection, rc=");

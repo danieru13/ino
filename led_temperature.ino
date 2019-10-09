@@ -11,7 +11,7 @@ const int B = 3975;
 // Update these with values suitable for your network.
 const char* ssid = "WIFI-LIS";                   
 //const char* password = "SSID_PASSWORD";          
-const char* mqtt_server = "192.168.193.101";            
+const char* mqtt_server = "192.168.192.7";            
 
 WiFiClient espClient;
 PubSubClient client(espClient);
