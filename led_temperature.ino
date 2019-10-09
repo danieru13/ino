@@ -1,55 +1,48 @@
-/*  Temperature Sensor and light controller
- *  (Light is represented using the built-in led)
- *  IoT Course 
- *  Universidad de Antioquia
- */
-
 #include <ESP8266WiFi.h>
-#include <PubSubClient.h> // client for publish/subscribe messaging with MQTT
+#include <PubSubClient.h> 
 
-// temperature sensor from A0 pin
+#define LED 2 //connect LED to digital pin2
 #define TEMP_SENSOR A0
-
 // Define the B-value of the thermistor.
 // This value is a property of the thermistor used in the Grove - Temperature Sensor,
 // and used to convert from the analog value it measures and a temperature value.
 const int B = 3975;
 
-#define BUILTIN_LED 2
-
 // Update these with values suitable for your network.
 const char* ssid = "WIFI-LIS";                   
 //const char* password = "SSID_PASSWORD";          
-const char* mqtt_server = "192.168.193.101";  
+const char* mqtt_server = "192.168.193.101";            
 
 WiFiClient espClient;
 PubSubClient client(espClient);
+
 long lastMsg = 0;
 char msg[50];
 int value = 0;
 
 void setup() {
-  pinMode(BUILTIN_LED, OUTPUT);    // BUILTIN_LED pin as an output
-  pinMode(TEMP_SENSOR, INPUT);     // TEMP_SENSOR pin as an input
+  // initialize the digital pin2 as an output.
+    pinMode(LED, OUTPUT);
+    pinMode(TEMP_SENSOR, INPUT);
   Serial.begin(115200);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
-  digitalWrite(BUILTIN_LED, HIGH); // Light initial state is OFF
 }
 
 void setup_wifi() {
   delay(10);
-  // Connecting to a WiFi network
+  // We start by connecting to a WiFi network
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
-
+  WiFi.disconnect();
+  delay(100);
   WiFi.begin(ssid);
-
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
+    Serial.print(WiFi.status());
   }
 
   Serial.println("");
@@ -58,38 +51,38 @@ void setup_wifi() {
   Serial.println(WiFi.localIP());
 }
 
-// Callback for incoming mqtt messages
 void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
+  String command;
   for (int i = 0; i < length; i++) {
-    Serial.print(i);
-    Serial.print((char)payload[i]);
-    
+    command += (char)payload[i];
   }
-  Serial.println();
-  
-  if((char)payload[5] == '1') {
-    digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on 
+  Serial.print(command);  
+  Serial.println(); 
+  if (command == "ON") {
+    // Turn On the lamp  
+    digitalWrite(LED, HIGH); 
   }
-  else if ((char)payload[5] == '0') {
-    digitalWrite(BUILTIN_LED, HIGH);   // Turn the LED off
-  }
+  else {
+    // Turn Off the lamp
+    digitalWrite(LED, LOW);   
+  }   
 }
 
-// Connection to mqtt server
 void reconnect() {
   // Loop until we're reconnected
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
-    // Attempt to connect ESP8266Client1
-    if (client.connect("ESP8266Client1")) {
+    // Attempt to connect
+    if (client.connect("ESP8266Client")) {
       Serial.println("connected");
-      // Subscribe to "casa/light" topic
-      client.subscribe("hospital/room/lamp");
-    } else {
-      Serial.print("failed, rc=");
+      // ... and resubscribe
+      client.subscribe("hospital/room/light");
+    } 
+    else {
+      Serial.print("failed connection, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
       // Wait 5 seconds before retrying
